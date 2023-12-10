@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Shooter/Weapon/Weapon.h"
 #include "Shooter/ShooterComponents/CombatComponent.h"
+#include "Components/CapsuleComponent.h"
 
 
 AShooterCharacter::AShooterCharacter()
@@ -34,6 +35,8 @@ AShooterCharacter::AShooterCharacter()
 	Combat->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }
 
 void AShooterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
