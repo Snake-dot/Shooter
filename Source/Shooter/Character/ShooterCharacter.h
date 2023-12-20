@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Shooter/ShooterTypes/TurningInPlace.h"
+#include "Shooter/Interfaces/InteractWithCrosshairsInterface.h"
 #include "ShooterCharacter.generated.h"
 
 UCLASS()
-class SHOOTER_API AShooterCharacter : public ACharacter
+class SHOOTER_API AShooterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
-
+		
 public:
 	AShooterCharacter();
 	virtual void Tick(float DeltaTime) override;
