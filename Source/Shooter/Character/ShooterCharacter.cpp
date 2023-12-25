@@ -69,10 +69,10 @@ void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	ShooterPlayerController = Cast<AShooterPlayerController>(Controller);
-	if (ShooterPlayerController)
+	UpdateHUDHealth();
+	if (HasAuthority())
 	{
-		ShooterPlayerController->SetHUDHealth(Health, MaxHealth);
+		OnTakeAnyDamage.AddDynamic(this, &AShooterCharacter::ReceiveDamage);
 	}
 }
 
@@ -149,6 +149,14 @@ void AShooterCharacter::PlayHitReactMontage()
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void AShooterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -359,11 +367,6 @@ void AShooterCharacter::TurnInPlace(float DeltaTime)
 	}
 }
 
-void AShooterCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMontage();
-}
-
 void AShooterCharacter::HideCameraIfCharacterClose()
 {
 	if (!IsLocallyControlled()) return;
@@ -394,7 +397,17 @@ float AShooterCharacter::CalculateSpeed()
 
 void AShooterCharacter::OnRep_Health()
 {
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
 
+void AShooterCharacter::UpdateHUDHealth()
+{
+	ShooterPlayerController = ShooterPlayerController == nullptr ? Cast<AShooterPlayerController>(Controller) : ShooterPlayerController = ShooterPlayerController;
+	if (ShooterPlayerController)
+	{
+		ShooterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 void AShooterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
