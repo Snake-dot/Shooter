@@ -14,6 +14,7 @@
 #include "ShooterAnimInstance.h"
 #include "Shooter/Shooter.h"
 #include "Shooter/PlayerController/ShooterPlayerController.h"
+#include "Shooter/GameMode/ShooterGameMode.h"
 
 
 AShooterCharacter::AShooterCharacter()
@@ -63,6 +64,11 @@ void AShooterCharacter::OnRep_ReplicatedMovement()
 	Super::OnRep_ReplicatedMovement();
 	SimProxiesTurn();
 	TimeSinceLastMovementReplication = 0.f;
+}
+
+void AShooterCharacter::Elim()
+{
+
 }
 
 void AShooterCharacter::BeginPlay()
@@ -157,6 +163,16 @@ void AShooterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	UpdateHUDHealth();
 	PlayHitReactMontage();
 
+	if (Health == 0.f)
+	{
+		AShooterGameMode* ShooterGameMode = GetWorld()->GetAuthGameMode<AShooterGameMode>();
+		if (ShooterGameMode)
+		{
+			ShooterPlayerController = ShooterPlayerController == nullptr ? Cast<AShooterPlayerController>(Controller) : ShooterPlayerController;
+			AShooterPlayerController* AttackerController = Cast<AShooterPlayerController>(InstigatorController);
+			ShooterGameMode->PlayerEliminated(this, ShooterPlayerController, AttackerController);
+		}
+	}
 }
 
 void AShooterCharacter::MoveForward(float Value)
