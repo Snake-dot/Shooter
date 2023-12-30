@@ -66,9 +66,10 @@ void AShooterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
-void AShooterCharacter::Elim()
+void AShooterCharacter::Elim_Implementation()
 {
-
+	bElimmed = true;
+	PlayElimMontage();
 }
 
 void AShooterCharacter::BeginPlay()
@@ -140,6 +141,29 @@ void AShooterCharacter::PlayFireMontage(bool bAiming)
 		AnimInstance->Montage_Play(FireWeaponMontage);
 		FName SectionName;
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void AShooterCharacter::PlayElimMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+		FName SectionName;
+		switch (FMath::RandRange(1, 3))
+		{
+			case 1:
+				SectionName = FName("Death1");
+				break;
+			case 2:
+				SectionName = FName("Death2");
+				break;
+			case 3:
+				SectionName = FName("Death3");
+				break;
+		}
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
