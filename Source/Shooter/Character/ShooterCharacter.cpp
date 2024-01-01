@@ -16,6 +16,8 @@
 #include "Shooter/PlayerController/ShooterPlayerController.h"
 #include "Shooter/GameMode/ShooterGameMode.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 
 AShooterCharacter::AShooterCharacter()
@@ -114,6 +116,15 @@ void AShooterCharacter::MulticastElim_Implementation()
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	if (ElimSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(
+			this,
+			ElimSound,
+			GetActorLocation()
+		);
+	}
 }
 
 void AShooterCharacter::ElimTimerFinished()
