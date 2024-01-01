@@ -18,6 +18,7 @@
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Shooter/PlayerState/ShooterPlayerState.h"
 
 
 AShooterCharacter::AShooterCharacter()
@@ -165,6 +166,7 @@ void AShooterCharacter::Tick(float DeltaTime)
 		CalculateAO_Pitch();
 	}
 	HideCameraIfCharacterClose();
+	PollInit();
 }
 
 void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -511,6 +513,18 @@ void AShooterCharacter::UpdateHUDHealth()
 	if (ShooterPlayerController)
 	{
 		ShooterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void AShooterCharacter::PollInit()
+{
+	if (ShooterPlayerState == nullptr)
+	{
+		ShooterPlayerState = GetPlayerState<AShooterPlayerState>();
+		if (ShooterPlayerState)
+		{
+			ShooterPlayerState->AddToScore(0.f);
+		}
 	}
 }
 
