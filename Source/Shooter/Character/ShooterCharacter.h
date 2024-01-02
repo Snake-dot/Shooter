@@ -117,6 +117,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	class AShooterPlayerController* ShooterPlayerController;
 
 	bool bElimmed = false;
@@ -164,6 +165,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance2;
 
+	UPROPERTY()
 	class AShooterPlayerState* ShooterPlayerState;
 
 public:	

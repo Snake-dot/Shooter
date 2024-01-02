@@ -4,17 +4,25 @@
 #include "ShooterPlayerState.h"
 #include "Shooter/Character/ShooterCharacter.h"
 #include "Shooter/PlayerController/ShooterPlayerController.h"
+#include "Net/UnrealNetwork.h"
+
+void AShooterPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AShooterPlayerState, Deaths);
+}
 
 void AShooterPlayerState::AddToScore(float ScoreAmount)
 {
-	Score += ScoreAmount;
+	SetScore(GetScore() + ScoreAmount);
 	Character = Character == nullptr ? Cast<AShooterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<AShooterPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(Score);
+			Controller->SetHUDScore(GetScore());
 		}
 	}
 }
@@ -29,7 +37,34 @@ void AShooterPlayerState::OnRep_Score()
 		Controller = Controller == nullptr ? Cast<AShooterPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(Score);
+			Controller->SetHUDScore(GetScore());
+		}
+	}
+}
+
+void AShooterPlayerState::AddToDeaths(int32 DeathsAmount)
+{
+	Deaths += DeathsAmount;
+	Character = Character == nullptr ? Cast<AShooterCharacter>(GetPawn()) : Character;
+	if (Character)
+	{
+		Controller = Controller == nullptr ? Cast<AShooterPlayerController>(Character->Controller) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDDeaths(Deaths);
+		}
+	}
+}
+
+void AShooterPlayerState::OnRep_Deaths()
+{
+	Character = Character == nullptr ? Cast<AShooterCharacter>(GetPawn()) : Character;
+	if (Character)
+	{
+		Controller = Controller == nullptr ? Cast<AShooterPlayerController>(Character->Controller) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDDeaths(Deaths);
 		}
 	}
 }

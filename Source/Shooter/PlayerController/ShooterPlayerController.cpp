@@ -53,5 +53,17 @@ void AShooterPlayerController::SetHUDScore(float Score)
 		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
 		ShooterHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromString(ScoreText));
 	}
+}
 
+void AShooterPlayerController::SetHUDDeaths(int32 Deaths)
+{
+	ShooterHUD = ShooterHUD == nullptr ? Cast<AShooterHUD>(GetHUD()) : ShooterHUD;
+	bool bHUDValid = ShooterHUD &&
+		ShooterHUD->CharacterOverlay &&
+		ShooterHUD->CharacterOverlay->DeathsAmount;
+	if (bHUDValid)
+	{
+		FString DeathsText = FString::Printf(TEXT("%d"), Deaths);
+		ShooterHUD->CharacterOverlay->DeathsAmount->SetText(FText::FromString(DeathsText));
+	}
 }
