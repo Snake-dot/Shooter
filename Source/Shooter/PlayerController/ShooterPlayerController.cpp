@@ -67,3 +67,16 @@ void AShooterPlayerController::SetHUDDeaths(int32 Deaths)
 		ShooterHUD->CharacterOverlay->DeathsAmount->SetText(FText::FromString(DeathsText));
 	}
 }
+
+void AShooterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
+{
+	ShooterHUD = ShooterHUD == nullptr ? Cast<AShooterHUD>(GetHUD()) : ShooterHUD;
+	bool bHUDValid = ShooterHUD &&
+		ShooterHUD->CharacterOverlay &&
+		ShooterHUD->CharacterOverlay->WeaponAmmoAmount;
+	if (bHUDValid)
+	{
+		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		ShooterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+}
