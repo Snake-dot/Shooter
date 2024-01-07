@@ -9,12 +9,17 @@
 #include "Shooter/Character/ShooterCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "Shooter/GameMode/ShooterGameMode.h"
+#include "Shooter/HUD/Announcement.h"
 
 void AShooterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	ShooterHUD = Cast<AShooterHUD>(GetHUD());
+	if (ShooterHUD)
+	{
+		ShooterHUD->AddAnnouncement();
+	}
 }
 
 void AShooterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -216,11 +221,7 @@ void AShooterPlayerController::OnMatchStateSet(FName State)
 
 	if (MatchState == MatchState::InProgress)
 	{
-		ShooterHUD = ShooterHUD == nullptr ? Cast<AShooterHUD>(GetHUD()) : ShooterHUD;
-		if (ShooterHUD)
-		{
-			ShooterHUD->AddCharacterOverlay();
-		}
+		HandleMatchHasStarted();
 	}
 }
 
@@ -228,10 +229,19 @@ void AShooterPlayerController::OnRep_MatchState()
 {
 	if (MatchState == MatchState::InProgress)
 	{
-		ShooterHUD = ShooterHUD == nullptr ? Cast<AShooterHUD>(GetHUD()) : ShooterHUD;
-		if (ShooterHUD)
+		HandleMatchHasStarted();
+	}
+}
+
+void AShooterPlayerController::HandleMatchHasStarted()
+{
+	ShooterHUD = ShooterHUD == nullptr ? Cast<AShooterHUD>(GetHUD()) : ShooterHUD;
+	if (ShooterHUD)
+	{
+		ShooterHUD->AddCharacterOverlay();
+		if (ShooterHUD->Announcement)
 		{
-			ShooterHUD->AddCharacterOverlay();
+			ShooterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }
