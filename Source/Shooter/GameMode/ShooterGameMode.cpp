@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "Shooter/PlayerState/ShooterPlayerState.h"
+#include "Shooter/GameState/ShooterGameState.h"
 
 namespace MatchState
 {
@@ -74,9 +75,12 @@ void AShooterGameMode::PlayerEliminated(AShooterCharacter* ElimmedCharacter, ASh
 	AShooterPlayerState* AttackerPlayerState = AttackerController ? Cast<AShooterPlayerState>(AttackerController->PlayerState) : nullptr;
 	AShooterPlayerState* VictimPlayerState = VictimController ? Cast<AShooterPlayerState>(VictimController->PlayerState) : nullptr;
 
-	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	AShooterGameState* ShooterGameState = GetGameState<AShooterGameState>();
+
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && ShooterGameState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
+		ShooterGameState->UpdateTopScore(AttackerPlayerState);
 	}
 	if (VictimPlayerState)
 	{

@@ -12,6 +12,8 @@
 #include "Shooter/HUD/Announcement.h"
 #include "Kismet/GameplayStatics.h"
 #include "Shooter/ShooterComponents/CombatComponent.h"
+#include "Shooter/GameState/ShooterGameState.h"
+#include "Shooter/PlayerState/ShooterPlayerState.h"
 
 void AShooterPlayerController::BeginPlay()
 {
@@ -352,7 +354,36 @@ void AShooterPlayerController::HandleCooldown()
 			ShooterHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
 			FString AnnouncementText("New Match Starts In:");
 			ShooterHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
-			ShooterHUD->Announcement->InfoText->SetText(FText());
+
+			AShooterGameState* ShooterGameState = Cast<AShooterGameState>(UGameplayStatics::GetGameState(this));
+			AShooterPlayerState* ShooterPlayerState = GetPlayerState<AShooterPlayerState>();
+			if (ShooterGameState && ShooterPlayerState)
+			{
+				TArray<AShooterPlayerState*> TopPlayers = ShooterGameState->TopScoringPlayers;
+				FString InfoTextString;
+				if (TopPlayers.Num() == 0)
+				{
+					InfoTextString = FString("What are you aiming at?");
+				}
+				else if (TopPlayers.Num() == 1 && TopPlayers[0] == ShooterPlayerState)
+				{
+					InfoTextString = FString("You are the winner");
+				}
+				else if (TopPlayers.Num() == 1)
+				{
+					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
+				}
+				else if (TopPlayers.Num() > 1)
+				{
+					InfoTextString = FString("Players tied for the win:\n");
+					for (auto TiedPlayer : TopPlayers)
+					{
+						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+					}
+				}
+
+				ShooterHUD->Announcement->InfoText->SetText(FText::FromString(InfoTextString));
+			}
 		}
 	}
 	AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(GetPawn());
