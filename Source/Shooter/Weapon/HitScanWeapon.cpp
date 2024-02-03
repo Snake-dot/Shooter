@@ -78,14 +78,19 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 FVector AHitScanWeapon::TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget)
 {
-	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
-	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
-	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
-	FVector EndLoc = SphereCenter + RandVec;
-	FVector ToEndLoc = EndLoc - TraceStart;
+	AShooterCharacter* OwnerCharacter = Cast<AShooterCharacter>(GetOwner());
+	if (OwnerCharacter == nullptr) return FVector();
 
-	/*
-	DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
+	const float SphereRadiusThisFrame = MinSphereRadius + ((MaxSphereRadius - MinSphereRadius) * OwnerCharacter->GetVelocityFactor());
+	const FVector ToTargetNomalized = (HitTarget - TraceStart).GetSafeNormal();
+	const FVector SphereCenter = TraceStart + ToTargetNomalized * DistanceToSphere;
+	const FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadiusThisFrame);
+	const FVector EndLoc = SphereCenter + RandVec;
+	const FVector ToEndLoc = EndLoc - TraceStart;
+	const FVector ToEndTrace = FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
+
+	
+	/*DrawDebugSphere(GetWorld(), SphereCenter, SphereRadiusThisFrame, 12, FColor::Red, true);
 	DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
 	DrawDebugLine(
 		GetWorld(),

@@ -29,6 +29,8 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
+
+	
 private:
 
 	UPROPERTY(EditAnywhere)
@@ -40,8 +42,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	USoundCue* FireSound;
 
-	
-
 	/*
 	* Trace end with scatter
 	*/
@@ -50,7 +50,10 @@ private:
 	float DistanceToSphere = 800.f;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float SphereRadius = 75.f;
+	float MaxSphereRadius = 75.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float MinSphereRadius = 0.f;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	bool bUseScatter = false;

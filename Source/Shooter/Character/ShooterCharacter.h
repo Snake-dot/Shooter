@@ -36,6 +36,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
 
+	double GetVelocityFactor();
+
 protected:
 	virtual void BeginPlay() override;
 

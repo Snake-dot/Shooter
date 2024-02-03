@@ -161,6 +161,16 @@ void AShooterCharacter::Destroyed()
 	}
 }
 
+double AShooterCharacter::GetVelocityFactor()
+{
+	FVector2D WalkSpeedRanged(0.f, GetCharacterMovement()->MaxWalkSpeed);
+	FVector2D VelocityMultiplierRange(0.f, 1.f);
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+
+	return FMath::GetMappedRangeValueClamped(WalkSpeedRanged, VelocityMultiplierRange, Velocity.Size());
+}
+
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
