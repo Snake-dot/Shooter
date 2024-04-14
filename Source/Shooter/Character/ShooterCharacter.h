@@ -192,6 +192,13 @@ private:
 	UPROPERTY()
 	class AShooterPlayerState* ShooterPlayerState;
 
+	/*
+	* Grenade
+	*/
+
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
+
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
