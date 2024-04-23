@@ -184,6 +184,10 @@ void AShooterCharacter::BeginPlay()
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AShooterCharacter::ReceiveDamage);
 	}
+	if (AttachedGrenade)
+	{
+		AttachedGrenade->SetVisibility(false);
+	}
 }
 
 void AShooterCharacter::Tick(float DeltaTime)
