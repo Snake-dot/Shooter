@@ -334,6 +334,7 @@ void UCombatComponent::JumpToShotgunEnd()
 void UCombatComponent::ThrowGrenadeFinished()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
+	AttachActorToRightHand(EquippedWeapon);
 }
 
 void UCombatComponent::LaunchGrenade()
