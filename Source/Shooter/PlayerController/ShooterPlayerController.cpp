@@ -92,6 +92,7 @@ void AShooterPlayerController::OnPossess(APawn* InPawn)
 	if (ShooterCharacter)
 	{
 		SetHUDHealth(ShooterCharacter->GetHealth(), ShooterCharacter->GetMaxHealth());
+		SetHUDShield(ShooterCharacter->GetShield(), ShooterCharacter->GetMaxShield());
 	}
 }
 
