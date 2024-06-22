@@ -87,7 +87,14 @@ void AShooterCharacter::Elim()
 {	
 	if (Combat && Combat->EquippedWeapon)
 	{
-		Combat->EquippedWeapon->Dropped();
+		if (Combat->EquippedWeapon->bDestroyWeapon)
+		{
+			Combat->EquippedWeapon->Destroy();
+		}
+		else
+		{
+			Combat->EquippedWeapon->Dropped();
+		}
 	}
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(
@@ -183,9 +190,7 @@ double AShooterCharacter::GetVelocityFactor()
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	UpdateHUDHealth();
-	UpdateHUDShield();
+
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AShooterCharacter::ReceiveDamage);
@@ -697,6 +702,31 @@ void AShooterCharacter::UpdateHUDShield()
 	}
 }
 
+void AShooterCharacter::UpdateHUDAmmo()
+{
+	ShooterPlayerController = ShooterPlayerController == nullptr ? Cast<AShooterPlayerController>(Controller) : ShooterPlayerController = ShooterPlayerController;
+	if (ShooterPlayerController && Combat && Combat->EquippedWeapon)
+	{
+		ShooterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
+		ShooterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
+	}
+}
+
+void AShooterCharacter::SpawnDefaultWeapon()
+{
+	AShooterGameMode* ShooterGameMode = Cast<AShooterGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (ShooterGameMode && World && !bElimmed && DefaultWeaponClass)
+	{
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass);
+		StartingWeapon->bDestroyWeapon = true;
+		if (Combat)
+		{
+			Combat->EquipWeapon(StartingWeapon);
+		}
+	}
+}
+
 void AShooterCharacter::PollInit()
 {
 	if (ShooterPlayerState == nullptr)
@@ -706,6 +736,17 @@ void AShooterCharacter::PollInit()
 		{
 			ShooterPlayerState->AddToScore(0.f);
 			ShooterPlayerState->AddToDeaths(0);
+		}
+	}
+	if (ShooterPlayerController == nullptr)
+	{
+		ShooterPlayerController = ShooterPlayerController == nullptr ? Cast<AShooterPlayerController>(Controller) : ShooterPlayerController;
+		if (ShooterPlayerController)
+		{
+			SpawnDefaultWeapon();
+			UpdateHUDAmmo();
+			UpdateHUDHealth();
+			UpdateHUDShield();
 		}
 	}
 }
