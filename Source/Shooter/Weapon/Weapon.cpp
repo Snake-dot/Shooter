@@ -12,6 +12,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Shooter/PlayerController/ShooterPlayerController.h"
 #include "Shooter/ShooterComponents/CombatComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AWeapon::AWeapon()
 {
@@ -258,6 +259,38 @@ void AWeapon::Fire(const FVector& HitTarget)
 	{
 		SpendRound();
 	}
+}
+
+FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)
+{
+	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
+	if (MuzzleFlashSocket == nullptr) return FVector();
+	FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+	FVector TraceStart = SocketTransform.GetLocation();
+
+
+	AShooterCharacter* OwnerCharacter = Cast<AShooterCharacter>(GetOwner());
+	if (OwnerCharacter == nullptr) return FVector();
+
+	const float SphereRadiusThisFrame = MinSphereRadius + ((MaxSphereRadius - MinSphereRadius) * OwnerCharacter->GetVelocityFactor());
+	const FVector ToTargetNomalized = (HitTarget - TraceStart).GetSafeNormal();
+	const FVector SphereCenter = TraceStart + ToTargetNomalized * DistanceToSphere;
+	const FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadiusThisFrame);
+	const FVector EndLoc = SphereCenter + RandVec;
+	const FVector ToEndLoc = EndLoc - TraceStart;
+	const FVector ToEndTrace = FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
+
+
+	/*DrawDebugSphere(GetWorld(), SphereCenter, SphereRadiusThisFrame, 12, FColor::Red, true);
+	DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
+	DrawDebugLine(
+		GetWorld(),
+		TraceStart,
+		FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()),
+		FColor::Cyan,
+		true);*/
+
+	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
 }
 
 void AWeapon::Dropped()
