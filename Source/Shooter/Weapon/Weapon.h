@@ -110,6 +110,9 @@ public:
 	float MinSphereRadius = 0.f;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	bool bUseScatter = false;
 
 protected:
