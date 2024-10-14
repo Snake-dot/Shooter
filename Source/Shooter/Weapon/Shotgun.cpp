@@ -4,10 +4,13 @@
 #include "Shotgun.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Shooter/Character/ShooterCharacter.h"
+#include "Shooter/PlayerController/ShooterPlayerController.h"
+#include "Shooter/ShooterComponents/LagCompensationComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/KismetMathLibrary.h"
+
 
 void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 {
@@ -61,16 +64,37 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 				}
 			}
 		}
+		TArray<AShooterCharacter*> HitCharacters;
+
 		for (auto HitPair : HitMap)
 		{
-			if (HitPair.Key && HasAuthority() && InstigatorController)
+			if (HitPair.Key && InstigatorController)
 			{
-				UGameplayStatics::ApplyDamage(
-					HitPair.Key, // Character that was hit
-					Damage * HitPair.Value, // Multiply Damage by number of times hit
-					InstigatorController,
-					this,
-					UDamageType::StaticClass()
+				if (HasAuthority() && !bUseServerSideRewind)
+				{
+					UGameplayStatics::ApplyDamage(
+						HitPair.Key, // Character that was hit
+						Damage * HitPair.Value, // Multiply Damage by number of times hit
+						InstigatorController,
+						this,
+						UDamageType::StaticClass()
+					);
+				}
+				
+				HitCharacters.Add(HitPair.Key);
+			}
+		}
+		if (!HasAuthority() && bUseServerSideRewind)
+		{
+			ShooterOwnerCharacter = ShooterOwnerCharacter == nullptr ? Cast<AShooterCharacter>(OwnerPawn) : ShooterOwnerCharacter;
+			ShooterOwnerController = ShooterOwnerController == nullptr ? Cast<AShooterPlayerController>(InstigatorController) : ShooterOwnerController;
+			if (ShooterOwnerController && ShooterOwnerCharacter && ShooterOwnerCharacter->GetLagCompensation() && ShooterOwnerCharacter->IsLocallyControlled())
+			{
+				ShooterOwnerCharacter->GetLagCompensation()->ShotgunServerScoreRequest(
+					HitCharacters,
+					Start,
+					HitTargets,
+					ShooterOwnerController->GetServerTime() - ShooterOwnerController->SingleTripTime
 				);
 			}
 		}

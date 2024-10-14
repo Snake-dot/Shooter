@@ -4,12 +4,12 @@
 #include "HitScanWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Shooter/Character/ShooterCharacter.h"
+#include "Shooter/PlayerController/ShooterPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "WeaponTypes.h"
 #include "Shooter/ShooterComponents/LagCompensationComponent.h"
-#include "Shooter/PlayerController/ShooterPlayerController.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -47,7 +47,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			{
 				ShooterOwnerCharacter = ShooterOwnerCharacter == nullptr ? Cast<AShooterCharacter>(OwnerPawn) : ShooterOwnerCharacter;
 				ShooterOwnerController = ShooterOwnerController == nullptr ? Cast<AShooterPlayerController>(InstigatorController) : ShooterOwnerController;
-				if (ShooterOwnerController && ShooterOwnerCharacter && ShooterOwnerCharacter->GetLagCompensation())
+				if (ShooterOwnerController && ShooterOwnerCharacter && ShooterOwnerCharacter->GetLagCompensation() && ShooterOwnerCharacter->IsLocallyControlled())
 				{
 					ShooterOwnerCharacter->GetLagCompensation()->ServerScoreRequest(
 						ShooterCharacter,
