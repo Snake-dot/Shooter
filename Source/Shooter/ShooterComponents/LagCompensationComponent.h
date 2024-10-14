@@ -70,11 +70,31 @@ public:
 	friend class AShooterCharacter;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
+
+	/*
+	* Hitscan
+	*/
+
 	FServerSideRewindResult ServerSideRewind(
 		class AShooterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocation,
 		float HitTime);
+
+	/*
+	* Projectile
+	*/
+
+	FServerSideRewindResult ProjectileServerSideRewind(
+		AShooterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+	);
+
+	/*
+	* Shotgun
+	*/
 
 	FShotgunServerSideRewindResult ShotgunServerSideRewind(
 		const TArray<AShooterCharacter*>& HitCharacters,
@@ -102,17 +122,34 @@ protected:
 	virtual void BeginPlay() override;
 	void SaveFramePackage(FFramePackage& Package);
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime);
-	FServerSideRewindResult ConfirmHit(
-		const FFramePackage& Package, 
-		AShooterCharacter* HitCharacter, 
-		const FVector_NetQuantize& TraceStart, 
-		const FVector_NetQuantize& HitLocation);
 	void CacheBoxPositions(AShooterCharacter* HitCharacter, FFramePackage& OutFramePackage);
 	void MoveBoxes(AShooterCharacter* HitCharacter, const FFramePackage& Package);
 	void ResetHitBoxes(AShooterCharacter* HitCharacter, const FFramePackage& Package);
 	void EnableCharacterMeshCollision(AShooterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
 	void SaveFramePackage();
 	FFramePackage GetFrameToCheck(AShooterCharacter* HitCharacter, float HitTime);
+
+	/*
+	* Hitscan
+	*/
+
+	FServerSideRewindResult ConfirmHit(
+		const FFramePackage& Package,
+		AShooterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation);
+
+	/*
+	* Projectile
+	*/
+
+	FServerSideRewindResult ProjectileConfirmHit(
+		const FFramePackage& Package,
+		AShooterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+	);
 
 	/*
 	* Shotgun
