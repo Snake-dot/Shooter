@@ -75,7 +75,10 @@ void UShooterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	}
 
 	bUseFABRIK = ShooterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
-	if (ShooterCharacter->IsLocallyControlled() && ShooterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade)
+	bool bFABRIKOverride = ShooterCharacter->IsLocallyControlled() && 
+		ShooterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade &&
+		ShooterCharacter->bFinishedSwapping;
+	if (bFABRIKOverride)
 	{
 		bUseFABRIK = !ShooterCharacter->IsLocallyReloading();
 	}
