@@ -15,6 +15,7 @@
 #include "Shooter/GameState/ShooterGameState.h"
 #include "Shooter/PlayerState/ShooterPlayerState.h"
 #include "Components/Image.h"
+#include "Shooter/HUD/ReturnToMainMenu.h"
 
 void AShooterPlayerController::BeginPlay()
 {
@@ -74,6 +75,27 @@ void AShooterPlayerController::CheckPing(float DeltaTime)
 		if (PingAnimationRunningTime > HighPingDuration)
 		{
 			StopHighPingWarning();
+		}
+	}
+}
+
+void AShooterPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainMenuWidget == nullptr) return;
+	if (ReturnToMainMenu == nullptr)
+	{
+		ReturnToMainMenu = CreateWidget<UReturnToMainMenu>(this, ReturnToMainMenuWidget);
+	}
+	if (ReturnToMainMenu)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if (bReturnToMainMenuOpen)
+		{
+			ReturnToMainMenu->MenuSetup();
+		}
+		else
+		{
+			ReturnToMainMenu->MenuTeardown();
 		}
 	}
 }
@@ -170,6 +192,14 @@ void AShooterPlayerController::OnPossess(APawn* InPawn)
 		SetHUDHealth(ShooterCharacter->GetHealth(), ShooterCharacter->GetMaxHealth());
 		SetHUDShield(ShooterCharacter->GetShield(), ShooterCharacter->GetMaxShield());
 	}
+}
+
+void AShooterPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if (InputComponent == nullptr) return;
+
+	InputComponent->BindAction("Quit", IE_Pressed, this, &AShooterPlayerController::ShowReturnToMainMenu);
 }
 
 void AShooterPlayerController::SetHUDHealth(float Health, float MaxHealth)
