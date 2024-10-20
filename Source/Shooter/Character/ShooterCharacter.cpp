@@ -166,20 +166,15 @@ void AShooterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
-void AShooterCharacter::Elim()
+void AShooterCharacter::Elim(bool bPlayerLeftGame)
 {	
 	DropOrDestroyWeapons();
-	MulticastElim();
-	GetWorldTimerManager().SetTimer(
-		ElimTimer,
-		this,
-		&AShooterCharacter::ElimTimerFinished,
-		ElimDelay
-	);
+	MulticastElim(bPlayerLeftGame);
 }
 
-void AShooterCharacter::MulticastElim_Implementation()
+void AShooterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 {
+	bLeftGame = bPlayerLeftGame;
 	if (ShooterPlayerController)
 	{
 		ShooterPlayerController->SetHUDWeaponAmmo(0);
@@ -227,14 +222,34 @@ void AShooterCharacter::MulticastElim_Implementation()
 	{
 		ShowSniperScopeWidget(false);
 	}
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&AShooterCharacter::ElimTimerFinished,
+		ElimDelay
+	);
 }
 
 void AShooterCharacter::ElimTimerFinished()
 {
 	AShooterGameMode* ShooterGameMode = GetWorld()->GetAuthGameMode<AShooterGameMode>();
-	if (ShooterGameMode)
+	if (ShooterGameMode && !bLeftGame)
 	{
 		ShooterGameMode->RequestRespawn(this, Controller);
+	}
+	if (bLeftGame && IsLocallyControlled())
+	{
+		OnLeftGame.Broadcast();
+	}
+}
+
+void AShooterCharacter::ServerLeaveGame_Implementation()
+{
+	AShooterGameMode* ShooterGameMode = GetWorld()->GetAuthGameMode<AShooterGameMode>();
+	ShooterPlayerState = ShooterPlayerState == nullptr ? GetPlayerState<AShooterPlayerState>() : ShooterPlayerState;
+	if (ShooterGameMode && ShooterPlayerState)
+	{
+		ShooterGameMode->PlayerLeftGame(ShooterPlayerState);
 	}
 }
 

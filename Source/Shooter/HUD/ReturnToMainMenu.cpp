@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "MultiplayerSessionsSubsystem.h"
 #include "GameFramework/GameModeBase.h"
+#include "Shooter/Character/ShooterCharacter.h"
 
 void UReturnToMainMenu::MenuSetup()
 {
@@ -104,6 +105,30 @@ void UReturnToMainMenu::ReturnButtonClicked()
 {
 	ReturnButton->SetIsEnabled(false);
 
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		APlayerController* FirstPlayerController = World->GetFirstPlayerController();
+		if (FirstPlayerController)
+		{
+			AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(FirstPlayerController->GetPawn());
+			if (ShooterCharacter)
+			{
+				ShooterCharacter->ServerLeaveGame();
+				ShooterCharacter->OnLeftGame.AddDynamic(this, &UReturnToMainMenu::OnPlayerLeftGame);
+			}
+			else
+			{
+				ReturnButton->SetIsEnabled(true);
+			}
+		}
+	}
+
+	
+}
+
+void UReturnToMainMenu::OnPlayerLeftGame()
+{
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->DestroySession();
