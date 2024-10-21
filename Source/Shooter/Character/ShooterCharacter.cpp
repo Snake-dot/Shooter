@@ -23,6 +23,9 @@
 #include "Shooter/Weapon/WeaponTypes.h"
 #include "Components/BoxComponent.h"
 #include "Shooter/ShooterComponents/LagCompensationComponent.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Shooter/GameState/ShooterGameState.h"
 
 
 AShooterCharacter::AShooterCharacter()
@@ -222,6 +225,10 @@ void AShooterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 	{
 		ShowSniperScopeWidget(false);
 	}
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
+	}
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
 		this,
@@ -302,6 +309,35 @@ double AShooterCharacter::GetVelocityFactor()
 	Velocity.Z = 0.f;
 
 	return FMath::GetMappedRangeValueClamped(WalkSpeedRanged, VelocityMultiplierRange, Velocity.Size());
+}
+
+void AShooterCharacter::MulticastGainedTheLead_Implementation()
+{
+	if (CrownSystem == nullptr) return;
+	if (CrownComponent == nullptr)
+	{
+		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			CrownSystem,
+			GetCapsuleComponent(),
+			FName(),
+			GetActorLocation() + FVector(0.f, 0.f, 110.f),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+	if (CrownComponent)
+	{
+		CrownComponent->Activate();
+	}
+}
+
+void AShooterCharacter::MulticastLostTheLead_Implementation()
+{
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
+	}
 }
 
 void AShooterCharacter::BeginPlay()
@@ -880,6 +916,12 @@ void AShooterCharacter::PollInit()
 		{
 			ShooterPlayerState->AddToScore(0.f);
 			ShooterPlayerState->AddToDeaths(0);
+
+			AShooterGameState* ShooterGameState = Cast<AShooterGameState>(UGameplayStatics::GetGameState(this));
+			if (ShooterGameState && ShooterGameState->TopScoringPlayers.Contains(ShooterPlayerState))
+			{
+				MulticastGainedTheLead();
+			}
 		}
 	}
 	if (ShooterPlayerController == nullptr)
