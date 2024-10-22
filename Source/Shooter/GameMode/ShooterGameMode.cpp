@@ -72,6 +72,8 @@ void AShooterGameMode::OnMatchStateSet()
 
 void AShooterGameMode::PlayerEliminated(AShooterCharacter* ElimmedCharacter, AShooterPlayerController* VictimController, AShooterPlayerController* AttackerController)
 {
+	if (AttackerController == nullptr || AttackerController->PlayerState == nullptr) return;
+	if (VictimController == nullptr || VictimController->PlayerState == nullptr) return;
 	AShooterPlayerState* AttackerPlayerState = AttackerController ? Cast<AShooterPlayerState>(AttackerController->PlayerState) : nullptr;
 	AShooterPlayerState* VictimPlayerState = VictimController ? Cast<AShooterPlayerState>(VictimController->PlayerState) : nullptr;
 
@@ -116,6 +118,15 @@ void AShooterGameMode::PlayerEliminated(AShooterCharacter* ElimmedCharacter, ASh
 	if (ElimmedCharacter)
 	{
 		ElimmedCharacter->Elim(false);
+	}
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		AShooterPlayerController* ShooterPlayer = Cast<AShooterPlayerController>(*It);
+		if (ShooterPlayer && AttackerPlayerState && VictimPlayerState)
+		{
+			ShooterPlayer->BroadcastElim(AttackerPlayerState, VictimPlayerState);
+		}
 	}
 }
 
