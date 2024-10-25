@@ -69,3 +69,23 @@ void AShooterPlayerState::OnRep_Deaths()
 		}
 	}
 }
+
+void AShooterPlayerState::SetTeam(ETeam TeamToSet)
+{
+	Team = TeamToSet;
+
+	AShooterCharacter* SCharacter = Cast<AShooterCharacter>(GetPawn());
+	if (SCharacter)
+	{
+		SCharacter->SetTeamColor(Team);
+	}
+}
+
+void AShooterPlayerState::OnRep_Team()
+{
+	AShooterCharacter* SCharacter = Cast<AShooterCharacter>(GetPawn());
+	if (SCharacter)
+	{
+		SCharacter->SetTeamColor(Team);
+	}
+}

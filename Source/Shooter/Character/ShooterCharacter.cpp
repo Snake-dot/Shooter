@@ -341,6 +341,32 @@ void AShooterCharacter::MulticastLostTheLead_Implementation()
 	}
 }
 
+void AShooterCharacter::SetTeamColor(ETeam Team)
+{
+	if (GetMesh() == nullptr || OriginalMaterial == nullptr || OriginalMaterial2 == nullptr) return;
+	switch (Team)
+	{
+	case ETeam::ET_NoTeam:
+		GetMesh()->SetMaterial(0, OriginalMaterial);
+		GetMesh()->SetMaterial(1, OriginalMaterial2);
+		DissolveMaterialInstance = OriginalDissolveMatInst;
+		DissolveMaterialInstance2 = OriginalDissolveMatInst2;
+		break;
+	case ETeam::ET_BlueTeam:
+		GetMesh()->SetMaterial(0, BlueMaterial);
+		GetMesh()->SetMaterial(1, BlueMaterial2);
+		DissolveMaterialInstance = BlueDissolveMatInst;
+		DissolveMaterialInstance2 = BlueDissolveMatInst2;
+		break;
+	case ETeam::ET_RedTeam:
+		GetMesh()->SetMaterial(0, RedMaterial);
+		GetMesh()->SetMaterial(1, RedMaterial2);
+		DissolveMaterialInstance = RedDissolveMatInst;
+		DissolveMaterialInstance2 = RedDissolveMatInst2;
+		break;
+	}
+}
+
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -925,6 +951,7 @@ void AShooterCharacter::PollInit()
 		{
 			ShooterPlayerState->AddToScore(0.f);
 			ShooterPlayerState->AddToDeaths(0);
+			SetTeamColor(ShooterPlayerState->GetTeam());
 
 			AShooterGameState* ShooterGameState = Cast<AShooterGameState>(UGameplayStatics::GetGameState(this));
 			if (ShooterGameState && ShooterGameState->TopScoringPlayers.Contains(ShooterPlayerState))
