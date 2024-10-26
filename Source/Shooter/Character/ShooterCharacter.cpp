@@ -392,6 +392,13 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 void AShooterCharacter::RotateInPlace(float DeltaTime)
 {
+	if (Combat && Combat->bHoldingTheFlag)
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
 	if (bDisableGameplay)
 	{
 		bUseControllerRotationYaw = false;
@@ -566,6 +573,7 @@ void AShooterCharacter::PlayHitReactMontage()
 
 void AShooterCharacter::GrenadeButtonPressed()
 {
+	if (Combat && Combat->bHoldingTheFlag) return;
 	if (Combat)
 	{
 		Combat->ThrowGrenade();
@@ -648,6 +656,7 @@ void AShooterCharacter::EquipButtonPressed()
 	if (bDisableGameplay) return;
 	if (Combat)
 	{
+		if (Combat->bHoldingTheFlag) return;
 		if (Combat->CombatState == ECombatState::ECS_Unoccupied) ServerEquipButtonPressed();
 		bool bSwap = Combat->ShouldSwapWeapons() && 
 			!HasAuthority() && 
@@ -679,6 +688,7 @@ void AShooterCharacter::ServerEquipButtonPressed_Implementation()
 
 void AShooterCharacter::CrouchButtonPressed()
 {
+	if (Combat && Combat->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
 	if (bIsCrouched)
 	{
@@ -692,6 +702,7 @@ void AShooterCharacter::CrouchButtonPressed()
 
 void AShooterCharacter::ReloadButtonPressed()
 {
+	if (Combat && Combat->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
 	if (Combat)
 	{
@@ -701,6 +712,7 @@ void AShooterCharacter::ReloadButtonPressed()
 
 void AShooterCharacter::AimButtonPressed()
 {
+	if (Combat && Combat->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
 	if (Combat)
 	{
@@ -710,6 +722,7 @@ void AShooterCharacter::AimButtonPressed()
 
 void AShooterCharacter::AimButtonReleased()
 {
+	if (Combat && Combat->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
 	if (Combat)
 	{
@@ -796,6 +809,7 @@ void AShooterCharacter::SimProxiesTurn()
 
 void AShooterCharacter::Jump()
 {
+	if (Combat && Combat->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
 	if (bIsCrouched)
 	{
@@ -809,6 +823,7 @@ void AShooterCharacter::Jump()
 
 void AShooterCharacter::FireButtonPressed()
 {
+	if (Combat && Combat->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
 	if (Combat)
 	{
@@ -818,6 +833,7 @@ void AShooterCharacter::FireButtonPressed()
 
 void AShooterCharacter::FireButtonReleased()
 {
+	if (Combat && Combat->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
 	if (Combat)
 	{
