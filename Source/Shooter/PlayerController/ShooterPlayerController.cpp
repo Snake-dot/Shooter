@@ -16,6 +16,7 @@
 #include "Shooter/PlayerState/ShooterPlayerState.h"
 #include "Components/Image.h"
 #include "Shooter/HUD/ReturnToMainMenu.h"
+#include "Shooter/ShooterTypes/Announcement.h"
 
 void AShooterPlayerController::BroadcastElim(APlayerState* Attacker, APlayerState* Victim)
 {
@@ -640,7 +641,7 @@ void AShooterPlayerController::HandleCooldown()
 		if (bHUDValid)
 		{
 			ShooterHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
-			FString AnnouncementText("New Match Starts In:");
+			FString AnnouncementText = Announcement::NewMatchStartsIn;
 			ShooterHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
 
 			AShooterGameState* ShooterGameState = Cast<AShooterGameState>(UGameplayStatics::GetGameState(this));
@@ -648,27 +649,7 @@ void AShooterPlayerController::HandleCooldown()
 			if (ShooterGameState && ShooterPlayerState)
 			{
 				TArray<AShooterPlayerState*> TopPlayers = ShooterGameState->TopScoringPlayers;
-				FString InfoTextString;
-				if (TopPlayers.Num() == 0)
-				{
-					InfoTextString = FString("What are you aiming at?");
-				}
-				else if (TopPlayers.Num() == 1 && TopPlayers[0] == ShooterPlayerState)
-				{
-					InfoTextString = FString("You are the winner");
-				}
-				else if (TopPlayers.Num() == 1)
-				{
-					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
-				}
-				else if (TopPlayers.Num() > 1)
-				{
-					InfoTextString = FString("Players tied for the win:\n");
-					for (auto TiedPlayer : TopPlayers)
-					{
-						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
-					}
-				}
+				FString InfoTextString = bShowTeamScores ? GetTeamsInfoText(ShooterGameState) : GetInfoText(TopPlayers);
 
 				ShooterHUD->Announcement->InfoText->SetText(FText::FromString(InfoTextString));
 			}
@@ -680,4 +661,68 @@ void AShooterPlayerController::HandleCooldown()
 		ShooterCharacter->bDisableGameplay = true;
 		ShooterCharacter->GetCombat()->FireButtonPressed(false);
 	}
+}
+
+FString AShooterPlayerController::GetInfoText(const TArray<class AShooterPlayerState*>& Players)
+{
+	AShooterPlayerState* ShooterPlayerState = GetPlayerState<AShooterPlayerState>();
+	if (ShooterPlayerState == nullptr) return FString();
+	FString InfoTextString;
+	if (Players.Num() == 0)
+	{
+		InfoTextString = Announcement::NoWinner;
+	}
+	else if (Players.Num() == 1 && Players[0] == ShooterPlayerState)
+	{
+		InfoTextString = Announcement::YouWin;
+	}
+	else if (Players.Num() == 1)
+	{
+		InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *Players[0]->GetPlayerName());
+	}
+	else if (Players.Num() > 1)
+	{
+		InfoTextString = Announcement::PlayersTiedWin;
+		InfoTextString.Append(FString("\n"));
+		for (auto TiedPlayer : Players)
+		{
+			InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+		}
+	}
+
+	return InfoTextString;
+}
+
+FString AShooterPlayerController::GetTeamsInfoText(AShooterGameState* ShooterGameState)
+{
+	if (ShooterGameState == nullptr) return FString();
+	FString InfoTextString;
+
+	const int32 RedTeamScore = ShooterGameState->RedTeamScore;
+	const int32 BlueTeamScore = ShooterGameState->BlueTeamScore;
+
+	if (RedTeamScore == 0 && BlueTeamScore == 0)
+	{
+		InfoTextString = Announcement::NoWinner;
+	}
+	else if (RedTeamScore == BlueTeamScore)
+	{
+		InfoTextString = Announcement::TeamsTiedWin;
+	}
+	else if (RedTeamScore > BlueTeamScore)
+	{
+		InfoTextString = Announcement::RedTeamWins;
+		InfoTextString.Append(TEXT("\n"));
+		InfoTextString.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::RedTeam, RedTeamScore));
+		InfoTextString.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::BlueTeam, BlueTeamScore));
+	}
+	else if (BlueTeamScore > RedTeamScore)
+	{
+		InfoTextString = Announcement::BlueTeamWins;
+		InfoTextString.Append(TEXT("\n"));
+		InfoTextString.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::BlueTeam, BlueTeamScore));
+		InfoTextString.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::RedTeam, RedTeamScore));
+	}
+
+	return InfoTextString;
 }
