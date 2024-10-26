@@ -1056,3 +1056,9 @@ bool AShooterCharacter::IsLocallyReloading()
 	return Combat->bLocallyReloading;
 }
 
+bool AShooterCharacter::IsHoldingTheFlag() const
+{
+	if (Combat == nullptr) return false;
+	return Combat->bHoldingTheFlag;
+}
+
