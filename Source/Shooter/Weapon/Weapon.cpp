@@ -79,8 +79,10 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
-	if (ShooterCharacter && PickupWidget)
+	if (ShooterCharacter)
 	{
+		if (WeaponType == EWeaponType::EWT_Flag && ShooterCharacter->GetTeam() == Team) return;
+		if (ShooterCharacter->IsHoldingTheFlag()) return;
 		ShooterCharacter->SetOverlappingWeapon(this);
 	}
 }
@@ -88,8 +90,10 @@ void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
-	if (ShooterCharacter && PickupWidget)
+	if (ShooterCharacter)
 	{
+		if (WeaponType == EWeaponType::EWT_Flag && ShooterCharacter->GetTeam() == Team) return;
+		if (ShooterCharacter->IsHoldingTheFlag()) return;
 		ShooterCharacter->SetOverlappingWeapon(nullptr);
 	}
 }

@@ -26,6 +26,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Shooter/GameState/ShooterGameState.h"
+#include "Shooter/PlayerStart/TeamPlayerStart.h"
 
 
 AShooterCharacter::AShooterCharacter()
@@ -286,7 +287,45 @@ void AShooterCharacter::DropOrDestroyWeapons()
 		{
 			DropOrDestroyWeapon(Combat->SecondaryWeapon);
 		}
+		if (Combat->TheFlag)
+		{
+			Combat->TheFlag->Dropped();
+		}
 
+	}
+}
+
+void AShooterCharacter::OnPlayerStateInitialized()
+{
+	ShooterPlayerState->AddToScore(0.f);
+	ShooterPlayerState->AddToDeaths(0);
+	SetTeamColor(ShooterPlayerState->GetTeam());
+	SetSpawnPoint();
+}
+
+void AShooterCharacter::SetSpawnPoint()
+{
+	if (HasAuthority() && ShooterPlayerState->GetTeam() != ETeam::ET_NoTeam)
+	{
+		TArray<AActor*> PlayerStarts;
+		UGameplayStatics::GetAllActorsOfClass(this, ATeamPlayerStart::StaticClass(), PlayerStarts);
+		TArray<ATeamPlayerStart*> TeamPlayerStarts;
+		for (auto Start : PlayerStarts)
+		{
+			ATeamPlayerStart* TeamStart = Cast<ATeamPlayerStart>(Start);
+			if (TeamStart && TeamStart->Team == ShooterPlayerState->GetTeam())
+			{
+				TeamPlayerStarts.Add(TeamStart);
+			}
+		}
+		if (TeamPlayerStarts.Num() > 0)
+		{
+			ATeamPlayerStart* ChosenPlayerStart = TeamPlayerStarts[FMath::RandRange(0, TeamPlayerStarts.Num() - 1)];
+			SetActorLocationAndRotation(
+				ChosenPlayerStart->GetActorLocation(),
+				ChosenPlayerStart->GetActorRotation()
+			);
+		}
 	}
 }
 
@@ -399,6 +438,8 @@ void AShooterCharacter::RotateInPlace(float DeltaTime)
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 		return;
 	}
+	if (Combat && Combat->EquippedWeapon) GetCharacterMovement()->bOrientRotationToMovement = false;
+	if (Combat && Combat->EquippedWeapon) bUseControllerRotationYaw = true;
 	if (bDisableGameplay)
 	{
 		bUseControllerRotationYaw = false;
@@ -967,9 +1008,7 @@ void AShooterCharacter::PollInit()
 		ShooterPlayerState = GetPlayerState<AShooterPlayerState>();
 		if (ShooterPlayerState)
 		{
-			ShooterPlayerState->AddToScore(0.f);
-			ShooterPlayerState->AddToDeaths(0);
-			SetTeamColor(ShooterPlayerState->GetTeam());
+			OnPlayerStateInitialized();
 
 			AShooterGameState* ShooterGameState = Cast<AShooterGameState>(UGameplayStatics::GetGameState(this));
 			if (ShooterGameState && ShooterGameState->TopScoringPlayers.Contains(ShooterPlayerState))
@@ -1076,5 +1115,18 @@ bool AShooterCharacter::IsHoldingTheFlag() const
 {
 	if (Combat == nullptr) return false;
 	return Combat->bHoldingTheFlag;
+}
+
+ETeam AShooterCharacter::GetTeam()
+{
+	ShooterPlayerState = ShooterPlayerState == nullptr ? GetPlayerState<AShooterPlayerState>() : ShooterPlayerState;
+	if (ShooterPlayerState == nullptr) return ETeam::ET_NoTeam;
+	return ShooterPlayerState->GetTeam();
+}
+
+void AShooterCharacter::SetHoldingTheFlag(bool bHolding)
+{
+	if (Combat == nullptr) return;
+	Combat->bHoldingTheFlag = bHolding;
 }
 
