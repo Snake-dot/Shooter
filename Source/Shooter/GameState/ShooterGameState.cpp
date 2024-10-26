@@ -4,6 +4,7 @@
 #include "ShooterGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "Shooter/PlayerState/ShooterPlayerState.h"
+#include "Shooter/PlayerController/ShooterPlayerController.h"
 
 void AShooterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -33,12 +34,42 @@ void AShooterGameState::UpdateTopScore(AShooterPlayerState* ScoringPlayer)
 	}
 }
 
+void AShooterGameState::RedTeamScores()
+{
+	++RedTeamScore;
+
+	AShooterPlayerController* SPlayer = Cast<AShooterPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (SPlayer)
+	{
+		SPlayer->SetHUDRedTeamScore(RedTeamScore);
+	}
+}
+
+void AShooterGameState::BlueTeamScores()
+{
+	++BlueTeamScore;
+
+	AShooterPlayerController* SPlayer = Cast<AShooterPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (SPlayer)
+	{
+		SPlayer->SetHUDBlueTeamScore(BlueTeamScore);
+	}
+}
+
 void AShooterGameState::OnRep_RedTeamScore()
 {
-
+	AShooterPlayerController* SPlayer = Cast<AShooterPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (SPlayer)
+	{
+		SPlayer->SetHUDRedTeamScore(RedTeamScore);
+	}
 }
 
 void AShooterGameState::OnRep_BlueTeamScore()
 {
-
+	AShooterPlayerController* SPlayer = Cast<AShooterPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (SPlayer)
+	{
+		SPlayer->SetHUDBlueTeamScore(BlueTeamScore);
+	}
 }
